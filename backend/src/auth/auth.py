@@ -26,6 +26,9 @@ class AuthError(Exception):
 
 
 def get_token_auth_header():
+    """
+    Checks the Authorization token and return the token
+    """
     auth = request.headers.get("Authorization", None)
     if not auth:
         raise AuthError({"code": "authorization_header_missing",
@@ -67,6 +70,9 @@ def check_permissions(permission, payload):
 
 
 def verify_decode_jwt(token):
+    """
+    It is used to decode the token and return the payload
+    """
     jsonurl = urlopen(f'https://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
 

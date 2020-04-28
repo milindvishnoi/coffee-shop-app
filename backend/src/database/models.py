@@ -56,6 +56,11 @@ class Drink(db.Model):
         self.title = title
         self.recipe = recipe
 
+    def __init__(self, id, title, recipe):
+        self.id = id
+        self.title = title
+        self.recipe = recipe
+
     '''
     short()
         short form representation of the Drink model

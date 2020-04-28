@@ -62,16 +62,15 @@ def get_detailed_drinks(jwt):
 def make_drink(jwt):
     details = request.get_json()
     new_recipe = details.get('recipe', None)
-    print(new_recipe)
     try:
         drink = Drink(title=details["title"], recipe=json.dumps([new_recipe]))
         drink.insert()
+        return jsonify({
+            "success": True,
+            "drinks": drink.long()
+        })
     except BaseException:
         abort(422)
-    return jsonify({
-        "success": True,
-        "drinks": drink.long()
-    })
 
 
 @app.route("/drinks/<int:id>", methods=["PATCH"])
