@@ -33,15 +33,13 @@ def index():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["GET"])
-@requires_auth("get:drinks-detail")
-def get_drinks(jwt):
-    print(jwt)
+def get_drinks():
     try:
         drinks = Drink.query.all()
-        print(drinks)
     except:
         abort(422)
     drinks_formatted = [drink.short() for drink in drinks]
+    print(drinks_formatted)
     if len(drinks_formatted) != 0:
         return jsonify({
             "success": True,
@@ -59,7 +57,8 @@ def get_drinks(jwt):
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks-detail", methods=["GET"])
-def get_detailed_drinks():
+@requires_auth("get:drinks-detail")
+def get_detailed_drinks(jwt):
     try:
         drinks = Drink.query.all()
     except:
@@ -83,12 +82,13 @@ def get_detailed_drinks():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=["POST"])
-def make_drink():
-    details = query.get_json()
+@requires_auth("post:drinks")
+def make_drink(jwt):
+    details = request.get_json()
+    print(details)
     try:
         drink = Drink(title=details["title"], recipe=details["recipe"])
-        db.session.add(drink)
-        db.commit()
+        drink.insert()
     except:
         abort(422)
     return jsonify({
@@ -109,16 +109,27 @@ def make_drink():
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks/<int:id>", methods=["PATCH"])
-def get_id_drink(id):
+@requires_auth("patch:drinks")
+def get_id_drink(jwt,id):
+    details = request.get_json()
+    new_title = details.get('title', None)
+    new_recipe = details.get('recipe', None)
+    print(new_title)
+
     try:
         drink = None
         drink = Drink.query.filter_by(id=id).first()
+        if new_title is not None:
+            drink.title = new_title
+        if new_recipe is not None:
+            drink.recipe = new_recipe
+        drink.update()
     except:
         abort(422)
     if drink:
         return jsonify({
             "success": True,
-            "drinks": drink.long()
+            "drinks": [drink.long()]
         })
     abort(404)
 
@@ -133,8 +144,9 @@ def get_id_drink(id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-@app.route("/drinks/<int:id>", methods=["PATCH"])
-def delete_drink(id):
+@app.route("/drinks/<int:id>", methods=["DELETE"])
+@requires_auth("delete:drinks")
+def delete_drink(jwt,id):
     try:
         drink = None
         drink = Drink.query.filter_by(id=id).first()
