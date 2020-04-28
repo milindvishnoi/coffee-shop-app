@@ -61,9 +61,10 @@ def get_detailed_drinks(jwt):
 @requires_auth("post:drinks")
 def make_drink(jwt):
     details = request.get_json()
-    print(details)
+    new_recipe = details.get('recipe', None)
+    print(new_recipe)
     try:
-        drink = Drink(title=details["title"], recipe=details["recipe"])
+        drink = Drink(title=details["title"], recipe=json.dumps([new_recipe]))
         drink.insert()
     except BaseException:
         abort(422)
